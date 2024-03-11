@@ -1,0 +1,38 @@
+=== Suite started at 2024-03-11 05:03:24
+=== Starting test, 1 test cases
+=cases         1
+=user          dmytro
+=host          b08-dit-200584
+=hosts         b08-dit-200584 
+=emulator_vsn  11.2.2.18
+=emulator      beam
+=otp_release   23
+=started       2024-03-11 05:03:24
+=case          ct_framework:init_per_suite
+=logfile       ct_framework.init_per_suite.html
+=group_props   [{suite,cache_app_SUITE}]
+=started       2024-03-11 05:03:24
+=ended         2024-03-11 05:03:24
+=result        ok
+=elapsed       0.0
+=case          cache_app_SUITE:test_ttl
+=logfile       cache_app_suite.test_ttl.html
+=started       2024-03-11 05:03:24
+=ended         2024-03-11 05:03:26
+=result        ok
+=elapsed       1.501742
+=case          ct_framework:end_per_suite
+=logfile       ct_framework.end_per_suite.html
+=group_props   [{suite,cache_app_SUITE}]
+=started       2024-03-11 05:03:26
+=ended         2024-03-11 05:03:26
+=result        ok
+=elapsed       1.0e-6
+=group_time    1.609s
+=== TEST COMPLETE, 1 ok, 0 failed of 1 test cases
+
+=finished      2024-03-11 05:03:26
+=failed        0
+=successful    1
+=user_skipped  0
+=auto_skipped  0
