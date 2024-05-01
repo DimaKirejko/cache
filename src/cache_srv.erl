@@ -1,5 +1,6 @@
 -module(cache_srv).
 -behaviour(gen_server).
+-include_lib("stdlib/include/ms_transform.hrl").
 
 %% API
 -export([start_link/0,
@@ -28,7 +29,7 @@ create(TableName) ->
     gen_server:call(?MODULE, {create, TableName}).
 
 insert(TableName, Key, Value) ->
-    gen_server:call(?MODULE, {insert, TableName, Key, Value}).
+    gen_server:call(?MODULE, {insert_ttl, TableName, Key, Value, 60}).
 
 insert(TableName, Key, Value, TTL) ->
     gen_server:call(?MODULE, {insert_ttl, TableName, Key, Value, TTL}).
@@ -40,20 +41,14 @@ lookup(TableName, Key) ->
 %% gen_server Functions
 %%====================================================================
 init(_Args) ->
-    erlang:send_after(60000, self(), delete_obsolete),
+    erlang:send_after(1000, self(), delete_obsolete),
     {ok, #{}}.
 
 handle_call({create, TableName}, _From, State) ->
-    TableId = ets:new(TableName, [named_table, set, private]),
+    TableId = ets:new(TableName, [named_table, set, public]),
     NewState = State#{TableName => TableId}, % Store TableId in the state map
     io:format("Table ~p successfully created with ID ~p.~n", [TableName, TableId]),
     {reply, ok, NewState};
-
-handle_call({insert, TableName, Key, Value}, _From, State) ->
-    TableId = maps:get(TableName, State),
-    true = ets:insert(TableId, {Key, Value}),
-    io:format("Table ~p successfully added ~p and ~p.~n", [TableName, Key, Value]),
-    {reply, ok, State};
 
 handle_call({insert_ttl, TableName, Key, Value, TTL}, _From, State) ->
     TableId = maps:get(TableName, State),
@@ -70,17 +65,8 @@ handle_call({lookup, TableName, Key}, _From, State) ->
             case ets:lookup(TableId, Key) of
                 [] ->
                     {reply, undefined, State};
-                [{_, Value}] ->
-                    {reply, Value, State};
-                [{_, Value, ExpiryTimeSeconds}] ->
-                    {Date, Time} = calendar:universal_time(),
-                    CurrentTimeSeconds = calendar:datetime_to_gregorian_seconds({Date, Time}),
-                    Reply = if CurrentTimeSeconds > ExpiryTimeSeconds ->
-                        undefined;
-                                true ->
-                                    Value
-                            end,
-                    {reply, Reply, State}
+                [{_, Value, _TTL}] ->
+                    {reply, Value, State}
             end;
         error ->
             {reply, undefined, State}
@@ -93,8 +79,16 @@ handle_cast(_Cast, State) ->
     {noreply, State}.
 
 handle_info(delete_obsolete, State) ->
-    maps:map(fun(_TableName, TableId) -> ets:delete_all_objects(TableId) end, State),
-    erlang:send_after(60000, self(), delete_obsolete),
+    {Date, Time} = calendar:universal_time(),
+    CurrentTimeSeconds = calendar:datetime_to_gregorian_seconds({Date, Time}),
+    %% формуємо match-spec
+    MatchSpecFun = fun(_TableName, TableId) ->
+        MatchSpec = ets:fun2ms(fun({_, _, Number}) when Number < CurrentTimeSeconds -> true end),
+        ets:select_delete(TableId, MatchSpec)
+                   end,
+    %% використовуємо match-spec
+    maps:map(MatchSpecFun, State),
+    erlang:send_after(1000, self(), delete_obsolete),
     {noreply, State}.
 
 terminate(_Reason, _State) ->

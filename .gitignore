@@ -1,0 +1,15 @@
+.erlang.mk/
+deps/
+_rel
+.idea/
+erl_crash.dump
+logs
+cache.d
+erlang.mk
+bin/
+test/
+logs
+test_logs/
+ebin/
+.DS_Store
+src/.DS_Store
