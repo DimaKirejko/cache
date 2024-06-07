@@ -14,20 +14,19 @@ all() ->
     [test_ttl, test_lookup].
 
 init_per_testcase(_TestCase, _Config) ->
-    application:ensure_all_started(cache),
+    cache_srv:start_link(),
     [].
 
 end_per_testcase(_TestCase, _Config) ->
-    application:stop(cache),
     ok.
 
 test_ttl(_Config) ->
-    cache_app:create(test_table),
-    cache_app:insert(test_table, "key2", "value2", 1),
-    timer:sleep(1500),
-    undefined = cache_app:lookup(test_table, "key2").
+    cache_srv:create(test_table),
+    cache_srv:insert(test_table, "key2", "value2", 1),
+    timer:sleep(2000),
+    ?assertEqual(undefined, cache_srv:lookup(test_table, "key2")).
 
 test_lookup(_Config) ->
-    cache_app:create(test_table2),
-    cache_app:insert(test_table2, "key2", "value2"),
-    "value2" = cache_app:lookup(test_table2, "key2").
+    cache_srv:create(test_table2),
+    cache_srv:insert(test_table2, "key2", "value2", permanent),
+    ?assertEqual("value2", cache_srv:lookup(test_table2, "key2")).
