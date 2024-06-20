@@ -1,4 +1,4 @@
--module(cache_cleaner).
+-module(ets_table_manager).
 -behaviour(gen_server).
 -include_lib("stdlib/include/ms_transform.hrl").
 
@@ -17,7 +17,7 @@
     create/1
 ]).
 
--define(EXPIRE_TIME, 6000).
+-define(EXPIRE_TIME, 60000).
 -define(DELETE_OPERATION, delete_obsolete).
 
 -record(state, {
@@ -49,7 +49,7 @@ init(_Args) ->
 handle_call(#create{tableName = TableName}, _From, #state{table_names = TableNames} = State) ->
     ets:new(TableName, [named_table, set, public]),
     NewTableNames = [TableName | TableNames],
-    io:format("Table ~p successfully created (TEST#122).~n", [TableName]),
+    io:format("Table ~p successfully created.~n", [TableName]),
     {reply, ok, State#state{table_names = NewTableNames}};
 
 handle_call(_Request, _From, State) ->

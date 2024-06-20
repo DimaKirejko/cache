@@ -15,13 +15,13 @@ init([]) ->
         intensity => 5,
         period => 10
     },
-    CacheServer = #{
-        id => cache_cleaner,
-        start => {cache_cleaner, start_link, []},
+    EtsTableManager = #{
+        id => ets_table_manager,
+        start => {ets_table_manager, start_link, []},
         restart => permanent,
         shutdown => 5000,
         type => worker,
-        modules => [cache_cleaner]
+        modules => [ets_table_manager]
     },
-    Children = [CacheServer],
+    Children = [EtsTableManager],
     {ok, {SupFlags, Children}}.

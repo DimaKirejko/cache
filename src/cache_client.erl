@@ -3,15 +3,29 @@
 %% API
 -export([create/1, insert/3, insert/4, lookup/2]).
 
+-spec create(TableName) -> ok  when
+    TableName :: atom().
 create(TableName) ->
-    cache_cleaner:create(TableName).
+    ets_table_manager:create(TableName).
 
+-spec insert(TableName, Key, Value) -> ok | {error, table_not_found} when
+    TableName :: atom(),
+    Key :: atom(),
+    Value :: term().
 insert(TableName, Key, Value) ->
     insert_with_ttl(TableName, Key, Value, infinity).
 
+-spec insert(TableName, Key, Value, TTL) -> ok | {error, table_not_found} when
+    TableName :: atom(),
+    Key :: atom(),
+    Value :: term(),
+    TTL :: pos_integer().
 insert(TableName, Key, Value, TTL) ->
     insert_with_ttl(TableName, Key, Value, TTL).
 
+-spec lookup(TableName, Key) -> {error, table_not_found} | undefined | term() when
+    TableName :: atom(),
+    Key :: atom().
 lookup(TableName, Key) ->
     lookup_table_name(TableName, Key).
 
@@ -21,7 +35,7 @@ lookup(TableName, Key) ->
 
 -spec insert_with_ttl(TableName, Key, Value, TTL) -> ok | {error, table_not_found} when
     TableName :: atom(),
-    Key :: term(),
+    Key :: atom(),
     Value :: term(),
     TTL :: pos_integer() | infinity.
 insert_with_ttl(TableName, Key, Value, TTL) ->
@@ -31,7 +45,7 @@ insert_with_ttl(TableName, Key, Value, TTL) ->
         _ ->
             {Date, Time} = calendar:universal_time(),
             CurrentTimeSeconds = calendar:datetime_to_gregorian_seconds({Date, Time}),
-            ExpiryTimeSeconds = check_ets_no_ttl(CurrentTimeSeconds, TTL),
+            ExpiryTimeSeconds = get_expiry_time_seconds(CurrentTimeSeconds, TTL),
             true = ets:insert(TableName, {Key, Value, ExpiryTimeSeconds}),
             io:format("Table ~p successfully added ~p with value ~p. Expiry set to ~p.~n",
                 [TableName, Key, Value, ExpiryTimeSeconds]),
@@ -40,7 +54,7 @@ insert_with_ttl(TableName, Key, Value, TTL) ->
 
 -spec lookup_table_name(TableName, Key) -> {error, table_not_found} | undefined | term() when
     TableName :: atom(),
-    Key :: term().
+    Key :: atom().
 lookup_table_name(TableName, Key) ->
     case ets:info(TableName) of
         undefined ->
@@ -53,7 +67,7 @@ lookup_table_name(TableName, Key) ->
 %% Internal
 %%====================================================================
 
-check_ets_no_ttl(CurrentTimeSeconds, TTL) ->
+get_expiry_time_seconds(CurrentTimeSeconds, TTL) ->
     case TTL of
         infinity ->
             infinity;
@@ -68,12 +82,10 @@ lookup_ets(TableName, Key) ->
         [{_, Value, ExpiryTimeSeconds}] ->
             {Date, Time} = calendar:universal_time(),
             CurrentTimeSeconds = calendar:datetime_to_gregorian_seconds({Date, Time}),
-            if CurrentTimeSeconds > ExpiryTimeSeconds ->
+            if CurrentTimeSeconds >= ExpiryTimeSeconds ->
                 ets:delete(TableName, Key),
                 undefined;
-                true ->
-                    Value
+            true ->
+                Value
             end
     end.
-
-
