@@ -16,12 +16,12 @@ init([]) ->
         period => 10
     },
     CacheServer = #{
-        id => cache_srv,
-        start => {cache_srv, start_link, []},
+        id => cache_cleaner,
+        start => {cache_cleaner, start_link, []},
         restart => permanent,
         shutdown => 5000,
         type => worker,
-        modules => [cache_srv]
+        modules => [cache_cleaner]
     },
     Children = [CacheServer],
     {ok, {SupFlags, Children}}.
