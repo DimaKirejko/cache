@@ -6,7 +6,7 @@
 -spec create(TableName) -> ok  when
     TableName :: atom().
 create(TableName) ->
-    ets_table_manager:create(TableName).
+    cache_ets_manager:create(TableName).
 
 -spec insert(TableName, Key, Value) -> ok | {error, table_not_found} when
     TableName :: atom(),

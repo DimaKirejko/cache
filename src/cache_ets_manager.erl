@@ -1,4 +1,4 @@
--module(ets_table_manager).
+-module(cache_ets_manager).
 -behaviour(gen_server).
 -include_lib("stdlib/include/ms_transform.hrl").
 
