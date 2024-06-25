@@ -1,5 +1,5 @@
 
-enter to run application
+enter to run application:
 *make run*
 
 for insert:
