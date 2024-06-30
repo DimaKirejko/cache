@@ -14,7 +14,8 @@
 ]).
 
 -export([
-    create/1
+    create/1,
+    start_link_test/1
 ]).
 
 -define(EXPIRE_TIME, 60000).
@@ -29,11 +30,18 @@
 }).
 
 %%====================================================================
+%% API Function for testing
+%%====================================================================
+
+start_link_test(TTL) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [TTL], []).
+
+%%====================================================================
 %% API Functions
 %%====================================================================
 
 start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [?EXPIRE_TIME], []).
 
 create(TableName) ->
     gen_server:call(?MODULE, #create{tableName = TableName}).
@@ -42,8 +50,8 @@ create(TableName) ->
 %% gen_server Functions
 %%====================================================================
 
-init(_Args) ->
-    erlang:send_after(?EXPIRE_TIME, self(), ?DELETE_OPERATION),
+init([TTL]) ->
+    erlang:send_after(TTL, self(), ?DELETE_OPERATION),
     {ok, #state{table_names = []}}.
 
 handle_call(#create{tableName = TableName}, _From, #state{table_names = TableNames} = State) ->

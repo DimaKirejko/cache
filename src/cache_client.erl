@@ -1,7 +1,12 @@
 -module(cache_client).
 
 %% API
--export([create/1, insert/3, insert/4, lookup/2]).
+-export([
+    create/1,
+    insert/3,
+    insert/4,
+    lookup/2
+]).
 
 -spec create(TableName) -> ok  when
     TableName :: atom().
