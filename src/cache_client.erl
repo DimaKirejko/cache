@@ -4,7 +4,12 @@
 -define(GLOBAL_TABLE_NAME, table).
 
 %% API
--export([insert/2, insert/3, lookup/1, lookup_by_time_period/2]).
+-export([
+    insert/2,
+    insert/3,
+    lookup/1,
+    lookup_by_time_period/2
+]).
 
 %% ====================================================================
 %% API functions
