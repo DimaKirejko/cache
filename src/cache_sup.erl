@@ -5,6 +5,8 @@
 
 -export([init/1]).
 
+-define(EXPIRE_TIME, 60000).
+
 -spec start_link() -> {ok, pid()}.
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
@@ -17,7 +19,7 @@ init([]) ->
     },
     CacheEtsManager = #{
         id => cache_ets_manager,
-        start => {cache_ets_manager, start_link, []},
+        start => {cache_ets_manager, start_link, [?EXPIRE_TIME]},
         restart => permanent,
         shutdown => 5000,
         type => worker,

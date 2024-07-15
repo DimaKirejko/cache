@@ -23,7 +23,7 @@ all() ->
     [test_delete_obsolete, test_ttl, test_lookup].
 
 init_per_testcase(_TestCase, _Config) ->
-    cache_ets_manager:start_link_test(3000),
+    cache_ets_manager:start_link(3000),
     [].
 
 end_per_testcase(_TestCase, _Config) ->
